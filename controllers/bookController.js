@@ -1,5 +1,6 @@
 const sequelize = require('../config/database');
 const Book = require('../models/book')(sequelize, require('sequelize').DataTypes);
+const { sendResponse } = require('../utils/responseHelper')
 
 exports.createBook = async (req, res) => {
   try {
@@ -10,35 +11,39 @@ exports.createBook = async (req, res) => {
     
     if(existingBook){
         
-        return res.status(400).json({message:"ISBN already exists"});
-
+        return sendResponse(res,400,null,"ISBN already exists");
     }
 
     const book = await Book.create({ title, isbn, author, publishedDate, quantity, location });
 
-    res.status(201).json(book);
+    return sendResponse(res,201,book,'Book created successfully');
   
 } catch (error) {
 
     console.error('Error creating book:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-
+    return sendResponse(res,500,null,'Internal Server Error');
+    
     }
 
 };
 
 exports.getBooks = async (req,res) => {
     try{
+
         const books = await Book.findAll();
+        
         if(books.length){
-            res.status(200).json(books);
-        }else {
-            res.status(404).json({message:"There is no Books!"});
+        
+            return sendResponse(res,200,books,"Books retrieved successfully");
         }
+
+        return sendResponse(res,404,null,"No books found");
+        
     }
     catch(error){
+        
         console.log(error)
-        res.status(500).json({error:"Error while fetching book"});
+        return sendResponse(res,500,null,'Error while fetching book');
 
     }
 };
@@ -47,16 +52,19 @@ exports.getBookById = async (req, res)=>{
     try{
 
         const book = await Book.findByPk(req.params.id);
+        
         if(book){
-            res.status(200).json(book);
+        
+            return sendResponse(res, 200, book, 'Book retrieved successfully');
         }
-        else {
-            res.status(404).json({message:"Book not found"});
-        }
+        
+        return sendResponse(res, 404, null, 'Book not found');
     }
     catch(error){
+        
         console.log(error)
-        res.status(500).json({error:"Error while fetching books"});
+        sendResponse(res, 500, null, 'Error while fetching book');
+    
     }
 };
 
@@ -66,7 +74,7 @@ exports.updateBookById = async(req, res) => {
 
         if(!book){
 
-            return res.status(404).json("Book not found");       
+            return sendResponse(res, 404, null, 'Book not found');
         
         }
         
@@ -76,7 +84,7 @@ exports.updateBookById = async(req, res) => {
             
             if(existingBook && existingBook.id!=book.id){
 
-                return res.status(400).json({message:"ISBN already exists"});
+                return sendResponse(res, 400, null, 'ISBN already exists');
 
             }
         }
@@ -91,28 +99,33 @@ exports.updateBookById = async(req, res) => {
 
         await book.save();
 
-        res.status(200).json(book);
+        sendResponse(res, 200, book, 'Book updated successfully');
 
         
     }catch(error){
         console.log(error)
-        res.status(500).json({error:"Error while updating book"});
+        sendResponse(res, 500, null, 'Error while updating book');
     }
 };
 
 exports.deleteBookById = async (req, res) =>{
+
     try {
+
         const result = await Book.destroy({where:{id:req.params.id}});
+
         if(result){
-            return res.status(200).json({message:"Book deleted successfully!"});
+
+            return sendResponse(res, 200, null, 'Book deleted successfully!');
         }
-        else {
-            return res.status(404).json({error:"Book not found"});
-        }
+         
+        return sendResponse(res, 404, null, 'Book not found');
+        
     }
     catch(error){
+        
         console.log(error)
-        res.status(500).json({error:"Error while deleting book"});
+        sendResponse(res, 500, null, 'Error while deleting book');
 
     }
 };
