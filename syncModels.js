@@ -3,7 +3,7 @@ const Book = require('./models/book')(sequelize, require('sequelize').DataTypes)
 
 async function syncModels() {
   try {
-    await sequelize.sync({ alter: true });
+    await sequelize.sync({ force: true });
     console.log('Database & tables created!');
   } catch (error) {
     console.error('Error syncing models:', error);
