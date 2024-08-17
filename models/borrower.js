@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true
         }
     }, {
+        tableName:'borrower',
         createdAt: 'create_at',
         updatedAt: 'update_at'
     });
