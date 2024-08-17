@@ -4,14 +4,27 @@ const Book = require('../models/book')(sequelize, require('sequelize').DataTypes
 exports.createBook = async (req, res) => {
   try {
     
-    const { title, isbn, author, publishedDate, quantity, location } = req.body;    
+    const { title, isbn, author, publishedDate, quantity, location } = req.body;
+    
+    const existingBook = await Book.findOne({where : {isbn:isbn}});
+    
+    if(existingBook){
+        
+        return res.status(400).json({message:"ISBN already exists"});
+
+    }
+
     const book = await Book.create({ title, isbn, author, publishedDate, quantity, location });
 
     res.status(201).json(book);
-  } catch (error) {
+  
+} catch (error) {
+
     console.error('Error creating book:', error);
     res.status(500).json({ error: 'Internal Server Error' });
-  }
+
+    }
+
 };
 
 exports.getBooks = async (req,res) => {
@@ -20,7 +33,7 @@ exports.getBooks = async (req,res) => {
         if(books.length){
             res.status(200).json(books);
         }else {
-            res.status(404).json("There is no Books!");
+            res.status(404).json({message:"There is no Books!"});
         }
     }
     catch(error){
@@ -38,7 +51,7 @@ exports.getBookById = async (req, res)=>{
             res.status(200).json(book);
         }
         else {
-            res.status(404).json("Book not found");
+            res.status(404).json({message:"Book not found"});
         }
     }
     catch(error){
@@ -63,7 +76,7 @@ exports.updateBookById = async(req, res) => {
             
             if(existingBook && existingBook.id!=book.id){
 
-                return res.status(400).json({"message":"ISBN already exists"});
+                return res.status(400).json({message:"ISBN already exists"});
 
             }
         }
@@ -84,5 +97,22 @@ exports.updateBookById = async(req, res) => {
     }catch(error){
         console.log(error)
         res.status(500).json({error:"Error while updating book"});
+    }
+};
+
+exports.deleteBookById = async (req, res) =>{
+    try {
+        const result = await Book.destroy({where:{id:req.params.id}});
+        if(result){
+            return res.status(200).json({message:"Book deleted successfully!"});
+        }
+        else {
+            return res.status(404).json({error:"Book not found"});
+        }
+    }
+    catch(error){
+        console.log(error)
+        res.status(500).json({error:"Error while deleting book"});
+
     }
 };
