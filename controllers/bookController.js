@@ -50,13 +50,36 @@ exports.getBookById = async (req, res)=>{
 exports.updateBookById = async(req, res) => {
     try{
         const book = await Book.findByPk(req.params.id);
-        if(book){
-            await Book.update(req.body, {where: {id:req.params.id}});
-            res.status(200).json(book);
+
+        if(!book){
+
+            return res.status(404).json("Book not found");       
+        
         }
-        else {
-            res.status(404).json("Book not found");
+        
+        if(req.body.isbn){
+
+            const existingBook = await Book.findOne({where:{isbn:req.body.isbn}});
+            
+            if(existingBook && existingBook.id!=book.id){
+
+                return res.status(400).json({"message":"ISBN already exists"});
+
+            }
         }
+
+        book.title = req.body.title || book.title
+        book.author = req.body.author || book.author
+        book.title = req.body.title || book.title
+        book.isbn = req.body.isbn || book.isbn
+        book.published_date = req.body.published_date || book.published_date
+        book.quantity = req.body.quantity || book.quantity
+        book.location = req.body.location || book.location
+
+        await book.save();
+
+        res.status(200).json(book);
+
         
     }catch(error){
         console.log(error)
