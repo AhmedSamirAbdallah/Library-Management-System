@@ -8,7 +8,7 @@ Docker and Docker Compose installed on your machine.
 Running the Project
 Clone the Repository:
 
-  git clone https://github.com/yourusername/your-repo.git
+  git clone https://github.com/AhmedSamirAbdallah/Library-Management-System.git
   cd your-repo
   Start Docker Containers:
 
