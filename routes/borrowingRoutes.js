@@ -3,10 +3,13 @@ const router = express.Router();
 const borrowingController = require('../controllers/borrowingController');
 const borrowing = require('../models/borrowing');
 
-router.post('/borrowings', borrowingController.createBorrowing)
-// router.get('/borrowings', borrowerController.getBorrowers)
-// router.get('/borrowings/:id', borrowerController.getBorrowerById)
-// router.put('/borrowings/:id', borrowerController.updateBorrowerById)
-// router.delete('/borrowings/:id', borrowerController.deleteBorrowerById)
+
+router.post('/borrowings', borrowingController.createBorrowing);
+
+router.get('/borrowings/borrower/:id', borrowingController.getBorrowedBooksByBorrower);
+
+router.put('/borrowings/:id/return', borrowingController.returnBook);
+
+router.get('/borrowings/overdue', borrowingController.getOverdueBooks);
 
 module.exports = router;
