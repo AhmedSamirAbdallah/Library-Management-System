@@ -17,3 +17,7 @@ Open your terminal and run:
 ```bash
 git clone https://github.com/AhmedSamirAbdallah/Library-Management-System.git
 cd Library-Management-System
+
+## Start Docker Containers
+```bash
+docker-compose up -d
