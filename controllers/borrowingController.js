@@ -4,6 +4,8 @@ const Borrower = require('../models/borrower')(sequelize, require('sequelize').D
 const Book = require('../models/book')(sequelize, require('sequelize').DataTypes);
 const { Op } = require('sequelize');
 const { sendResponse } = require('../utils/responseHelper')
+const ExcelJS = require('exceljs');
+
 
 exports.createBorrowing = async (req, res) => {
     try{
@@ -115,3 +117,86 @@ exports.getOverdueBooks = async (req, res) => {
         return sendResponse(res, 500, null, 'Internal Server Error');
     }
 };
+
+
+exports.exportOverdueBorrowings = async (req, res) => {
+    try {
+      const today = new Date();
+      const lastMonth = new Date(today.setMonth(today.getMonth() - 1));
+      
+      const overdueBorrowings = await Borrowing.findAll({
+        where: {
+          date_to: { [Op.lt]: lastMonth },
+          active: true
+        }
+      });
+  
+      if (overdueBorrowings.length === 0) {
+        return sendResponse(res, 404, null, 'No overdue borrowings found');
+      }
+  
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Overdue Borrowings');
+  
+      worksheet.columns = [
+        { header: 'ID', key: 'id' },
+        { header: 'Book ID', key: 'book_id' },
+        { header: 'Borrower ID', key: 'borrower_id' },
+        { header: 'Date From', key: 'date_from', width: 20 },
+        { header: 'Date To', key: 'date_to', width: 20 },
+        { header: 'Active', key: 'active' }
+      ];
+  
+      overdueBorrowings.forEach(borrowing => {
+        worksheet.addRow(borrowing.toJSON());
+      });
+  
+      res.setHeader('Content-Disposition', 'attachment; filename=overdue_borrowings.xlsx');
+      await workbook.xlsx.write(res);
+      res.end();
+    } catch (error) {
+      console.error(error);
+      return sendResponse(res, 500, null, 'Internal Server Error');
+    }
+  };
+  
+  exports.exportBorrowingProcesses = async (req, res) => {
+    try {
+      const today = new Date();
+      const lastMonth = new Date(today.setMonth(today.getMonth() - 1));
+  
+      const borrowingProcesses = await Borrowing.findAll({
+        where: {
+          create_at: { [Op.gt]: lastMonth }
+        }
+      });
+  
+      if (borrowingProcesses.length === 0) {
+        return sendResponse(res, 404, null, 'No borrowing processes found');
+      }
+  
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Borrowing Processes');
+  
+      worksheet.columns = [
+        { header: 'ID', key: 'id' },
+        { header: 'Book ID', key: 'book_id' },
+        { header: 'Borrower ID', key: 'borrower_id' },
+        { header: 'Date From', key: 'date_from', width: 20 },
+        { header: 'Date To', key: 'date_to', width: 20 },
+        { header: 'Active', key: 'active' }
+      ];
+  
+      borrowingProcesses.forEach(process => {
+        worksheet.addRow(process.toJSON());
+      });
+  
+      res.setHeader('Content-Disposition', 'attachment; filename=borrowing_processes.xlsx');
+      await workbook.xlsx.write(res);
+      res.end();
+    } catch (error) {
+      console.error(error);
+      return sendResponse(res, 500, null, 'Internal Server Error');
+    }
+  };
+  
